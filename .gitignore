@@ -13,6 +13,18 @@ out/
 *.mdf
 *.ldf
 
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
 # Angular
 Frontend/node_modules/
 Frontend/dist/
@@ -21,18 +33,31 @@ Frontend/coverage/
 Frontend/.nyc_output/
 Frontend/e2e/
 Frontend/.sass-cache/
+Frontend/tmp/
 
-# Logs
-*.log
+# Node.js
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Logs
+*.log
 
 # Runtime data
 pids
 *.pid
 *.seed
 *.pid.lock
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # OS generated files
 .DS_Store
@@ -42,11 +67,13 @@ pids
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
-# IDE
+# IDE files
 .idea/
 *.swp
 *.swo
+.vscode/
 
 # Build results
 [Dd]ebug/
@@ -71,3 +98,24 @@ bld/
 *.userosscache
 *.sln.docstates
 .vs/
+*.VC.db
+*.VC.opendb
+
+# Rider
+.idea/
+*.sln.iml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temp files
+*.tmp
+*.temp
+
+# Local configuration files
+appsettings.local.json
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
