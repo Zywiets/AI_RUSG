@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
+using Backend.DTOs;
+using AutoMapper;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,24 +15,27 @@ namespace Backend.Controllers
     public class PurchaseHistoryController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public PurchaseHistoryController(ApplicationDbContext context)
+        public PurchaseHistoryController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/PurchaseHistory
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PurchaseHistory>>> GetPurchaseHistories()
+        public async Task<ActionResult<IEnumerable<PurchaseHistoryDto>>> GetPurchaseHistories()
         {
-            return await _context.PurchaseHistories
+            var purchases = await _context.PurchaseHistories
                 .Include(p => p.User)
                 .ToListAsync();
+            return Ok(_mapper.Map<IEnumerable<PurchaseHistoryDto>>(purchases));
         }
 
         // GET: api/PurchaseHistory/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<PurchaseHistory>> GetPurchaseHistory(int id)
+        public async Task<ActionResult<PurchaseHistoryDto>> GetPurchaseHistory(int id)
         {
             var purchaseHistory = await _context.PurchaseHistories
                 .Include(p => p.User)
@@ -41,39 +46,43 @@ namespace Backend.Controllers
                 return NotFound();
             }
 
-            return purchaseHistory;
+            return Ok(_mapper.Map<PurchaseHistoryDto>(purchaseHistory));
         }
 
         // GET: api/PurchaseHistory/user/5
         [HttpGet("user/{userId}")]
-        public async Task<ActionResult<IEnumerable<PurchaseHistory>>> GetPurchaseHistoryByUser(int userId)
+        public async Task<ActionResult<IEnumerable<PurchaseHistoryDto>>> GetPurchaseHistoryByUser(int userId)
         {
-            return await _context.PurchaseHistories
+            var purchases = await _context.PurchaseHistories
                 .Where(p => p.UserId == userId)
                 .Include(p => p.User)
                 .ToListAsync();
+            return Ok(_mapper.Map<IEnumerable<PurchaseHistoryDto>>(purchases));
         }
 
         // POST: api/PurchaseHistory
         [HttpPost]
-        public async Task<ActionResult<PurchaseHistory>> PostPurchaseHistory(PurchaseHistory purchaseHistory)
+        public async Task<ActionResult<PurchaseHistoryDto>> PostPurchaseHistory(CreatePurchaseHistoryDto createPurchaseHistoryDto)
         {
+            var purchaseHistory = _mapper.Map<PurchaseHistory>(createPurchaseHistoryDto);
             _context.PurchaseHistories.Add(purchaseHistory);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetPurchaseHistory", new { id = purchaseHistory.Id }, purchaseHistory);
+            var purchaseHistoryDto = _mapper.Map<PurchaseHistoryDto>(purchaseHistory);
+            return CreatedAtAction("GetPurchaseHistory", new { id = purchaseHistory.Id }, purchaseHistoryDto);
         }
 
         // PUT: api/PurchaseHistory/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPurchaseHistory(int id, PurchaseHistory purchaseHistory)
+        public async Task<IActionResult> PutPurchaseHistory(int id, UpdatePurchaseHistoryDto updatePurchaseHistoryDto)
         {
-            if (id != purchaseHistory.Id)
+            var purchaseHistory = await _context.PurchaseHistories.FindAsync(id);
+            if (purchaseHistory == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(purchaseHistory).State = EntityState.Modified;
+            _mapper.Map(updatePurchaseHistoryDto, purchaseHistory);
 
             try
             {

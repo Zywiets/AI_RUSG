@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
+using Backend.Profiles;
 
 namespace Backend
 {
@@ -31,6 +32,9 @@ namespace Backend
             // Add Entity Framework
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            // Add AutoMapper
+            services.AddAutoMapper(typeof(AutoMapperProfile));
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

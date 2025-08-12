@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
+using Backend.DTOs;
+using AutoMapper;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,22 +15,25 @@ namespace Backend.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public UsersController(ApplicationDbContext context)
+        public UsersController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
         {
-            return await _context.Users.Include(u => u.PurchaseHistory).ToListAsync();
+            var users = await _context.Users.Include(u => u.PurchaseHistory).ToListAsync();
+            return Ok(_mapper.Map<IEnumerable<UserDto>>(users));
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<ActionResult<UserDto>> GetUser(int id)
         {
             var user = await _context.Users
                 .Include(u => u.PurchaseHistory)
@@ -39,29 +44,32 @@ namespace Backend.Controllers
                 return NotFound();
             }
 
-            return user;
+            return Ok(_mapper.Map<UserDto>(user));
         }
 
         // POST: api/Users
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<UserDto>> PostUser(CreateUserDto createUserDto)
         {
+            var user = _mapper.Map<User>(createUserDto);
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new { id = user.Id }, user);
+            var userDto = _mapper.Map<UserDto>(user);
+            return CreatedAtAction("GetUser", new { id = user.Id }, userDto);
         }
 
         // PUT: api/Users/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        public async Task<IActionResult> PutUser(int id, UpdateUserDto updateUserDto)
         {
-            if (id != user.Id)
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(user).State = EntityState.Modified;
+            _mapper.Map(updateUserDto, user);
 
             try
             {
